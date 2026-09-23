@@ -1,9 +1,10 @@
 import { Text, View } from "react-native";
+import { styles } from "../../styles/auth.styles";
 
 export default function Create() {
   return (
-    <View>
-      <Text>Create</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Create</Text>
     </View>
   );
 }

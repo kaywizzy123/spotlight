@@ -3,13 +3,14 @@ import { Image } from "expo-image";
 import { Pressable, Text, View } from "react-native";
 
 import { COLORS } from "@/constants/theme";
+import { styles } from "@/styles/auth.styles";
 
 export default function Profile() {
   const { user } = useUser();
   const { signOut } = useClerk();
 
   return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 12 }}>
+    <View style={styles.container}>
       {user?.imageUrl && (
         <Image
           source={{ uri: user.imageUrl }}
