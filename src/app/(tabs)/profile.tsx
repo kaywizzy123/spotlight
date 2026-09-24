@@ -1,13 +1,13 @@
-import { useClerk, useUser } from "@clerk/expo";
+import { useAuth, useUser } from "@clerk/expo";
 import { Image } from "expo-image";
 import { Pressable, Text, View } from "react-native";
 
 import { COLORS } from "@/constants/theme";
-import { styles } from "@/styles/auth.styles";
+import { styles } from "../../styles/auth.styles";
 
 export default function Profile() {
   const { user } = useUser();
-  const { signOut } = useClerk();
+  const { signOut } = useAuth();
 
   return (
     <View style={styles.container}>
