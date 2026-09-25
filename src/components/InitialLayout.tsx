@@ -1,11 +1,15 @@
 import { useAuth } from "@clerk/expo";
-import { Stack, useRouter, useSegments } from "expo-router";
+import { SplashScreen, Stack, useRouter, useSegments } from "expo-router";
 import { useEffect } from "react";
 
 export default function InitialLayout() {
   const { isLoaded, isSignedIn } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+
+  useEffect(() => {
+    if (isLoaded) SplashScreen.hideAsync();
+  }, [isLoaded]);
 
   useEffect(() => {
     if (!isLoaded) return;
