@@ -28,11 +28,16 @@ type PostProps = {
     };
   };
   onDeleted?: () => void;
+  initialShowComments?: boolean;
 };
-export default function Post({ post, onDeleted }: PostProps) {
+export default function Post({
+  post,
+  onDeleted,
+  initialShowComments = false,
+}: PostProps) {
   const [isLiked, setIsLiked] = useState(post.isLiked);
   const [likesCount, setLikesCount] = useState(post.likes);
-  const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(initialShowComments);
   const [isBookmarked, setIsBookmarked] = useState(post.isBookmarked);
 
   const toggleLike = useMutation(api.posts.toggleLike);

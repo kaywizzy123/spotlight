@@ -224,3 +224,16 @@ export const getUserPostsWithInfo = query({
     );
   },
 });
+
+// a single post with full info, or null if it has been deleted
+export const getPostById = query({
+  args: { postId: v.id("posts") },
+  handler: async (ctx, args) => {
+    const currentUser = await getAuthenticatedUser(ctx);
+
+    const post = await ctx.db.get("posts", args.postId);
+    if (!post) return null;
+
+    return await withPostInfo(ctx, post, currentUser._id);
+  },
+});

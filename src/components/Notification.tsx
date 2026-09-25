@@ -3,7 +3,8 @@ import { styles } from "@/styles/notifications.styles";
 import { formatTimeAgo } from "@/utils/formatTimeAgo";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { Text, View } from "react-native";
+import { router } from "expo-router";
+import { Text, TouchableOpacity, View } from "react-native";
 import { Id } from "../../convex/_generated/dataModel";
 
 type NotificationProps = {
@@ -12,10 +13,12 @@ type NotificationProps = {
     _creationTime: number;
     type: "like" | "comment" | "follow";
     sender: {
+      _id?: Id<"users">;
       username?: string;
       image?: string;
     };
     post: {
+      _id: Id<"posts">;
       imageUrl: string;
     } | null;
     comment: string | null;
@@ -23,10 +26,33 @@ type NotificationProps = {
 };
 
 export default function Notification({ notification }: NotificationProps) {
+  const openSenderProfile = () => {
+    if (!notification.sender._id) return;
+    router.push({
+      pathname: "/user/[id]",
+      params: { id: notification.sender._id },
+    });
+  };
+
+  // like/comment open the post, follow opens the follower's profile
+  const handlePress = () => {
+    if (!notification.post) return openSenderProfile();
+    router.push({
+      pathname: "/post/[id]",
+      params: {
+        id: notification.post._id,
+        showComments: notification.type === "comment" ? "true" : undefined,
+      },
+    });
+  };
+
   return (
-    <View style={styles.notificationItem}>
+    <TouchableOpacity style={styles.notificationItem} onPress={handlePress}>
       <View style={styles.notificationContent}>
-        <View style={styles.avatarContainer}>
+        <TouchableOpacity
+          style={styles.avatarContainer}
+          onPress={openSenderProfile}
+        >
           <Image
             source={notification.sender.image}
             style={styles.avatar}
@@ -43,7 +69,7 @@ export default function Notification({ notification }: NotificationProps) {
               <Ionicons name="chatbubble" size={14} color="#3B82F6" />
             )}
           </View>
-        </View>
+        </TouchableOpacity>
 
         <View style={styles.notificationInfo}>
           <Text style={styles.username}>{notification.sender.username}</Text>
@@ -69,6 +95,6 @@ export default function Notification({ notification }: NotificationProps) {
           cachePolicy="memory-disk"
         />
       )}
-    </View>
+    </TouchableOpacity>
   );
 }
