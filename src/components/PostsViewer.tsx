@@ -4,7 +4,7 @@ import { COLORS } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { FunctionReturnType } from "convex/server";
 import { router } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import { api } from "../../convex/_generated/api";
 import { styles } from "../styles/profile.styles";
@@ -29,7 +29,8 @@ export default function PostsViewer({
   initialPostId,
   keepRemoved = false,
 }: PostsViewerProps) {
-  const listRef = useRef<FlatList>(null);
+  // start with the tapped post at the top, then add the earlier ones above it
+  const [showEarlier, setShowEarlier] = useState(!initialPostId);
   const [kept, setKept] = useState(() => posts ?? []);
   const [prevPosts, setPrevPosts] = useState(posts);
   const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
@@ -65,10 +66,12 @@ export default function PostsViewer({
 
   if (items === undefined) return <Loader />;
 
-  const initialIndex = Math.max(
-    0,
-    items.findIndex((post) => post._id === initialPostId),
-  );
+  const startIndex = showEarlier
+    ? 0
+    : Math.max(
+        0,
+        items.findIndex((post) => post._id === initialPostId),
+      );
 
   return (
     <View style={styles.container}>
@@ -82,8 +85,7 @@ export default function PostsViewer({
       </View>
 
       <FlatList
-        ref={listRef}
-        data={items}
+        data={startIndex > 0 ? items.slice(startIndex) : items}
         renderItem={({ item }) => (
           <Post
             post={item}
@@ -95,17 +97,10 @@ export default function PostsViewer({
         keyExtractor={(item) => item._id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 60 }}
-        initialScrollIndex={initialIndex}
-        // posts have different heights, so the first jump can miss;
-        // scroll roughly there to render it, then snap to it
-        onScrollToIndexFailed={({ index, averageItemLength }) => {
-          listRef.current?.scrollToOffset({
-            offset: index * averageItemLength,
-            animated: false,
-          });
-          setTimeout(() => {
-            listRef.current?.scrollToIndex({ index, animated: false });
-          }, 100);
+        // keep the tapped post in place when the earlier posts are added
+        maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
+        onContentSizeChange={() => {
+          if (!showEarlier) setShowEarlier(true);
         }}
       />
     </View>
