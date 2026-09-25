@@ -6,8 +6,16 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
 import { Image } from "expo-image";
 import { Link } from "expo-router";
-import { useState } from "react";
-import { Alert, Text, TouchableOpacity, View } from "react-native";
+import { useRef, useState } from "react";
+import {
+  Alert,
+  Animated,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 
@@ -46,13 +54,53 @@ export default function Post({
 
   const currentUser = useQuery(api.users.getCurrentUser);
 
+  const [heartScale] = useState(() => new Animated.Value(0));
+  const [heartOpacity] = useState(() => new Animated.Value(0));
+  const lastTapRef = useRef(0);
+  const likePendingRef = useRef(false);
+
   const handleLike = async () => {
+    // ignore taps while a like is in flight so they can't undo each other
+    if (likePendingRef.current) return;
+    likePendingRef.current = true;
     try {
       const newIsLiked = await toggleLike({ postId: post._id });
       setIsLiked(newIsLiked);
       setLikesCount((prev) => (newIsLiked ? prev + 1 : prev - 1));
     } catch (error) {
       console.error("Error toggling like:", error);
+    } finally {
+      likePendingRef.current = false;
+    }
+  };
+
+  const showHeart = () => {
+    heartScale.setValue(0);
+    heartOpacity.setValue(1);
+    Animated.sequence([
+      Animated.spring(heartScale, {
+        toValue: 1,
+        friction: 4,
+        useNativeDriver: true,
+      }),
+      Animated.timing(heartOpacity, {
+        toValue: 0,
+        duration: 250,
+        delay: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  // double tap the image to like; it never unlikes, like Instagram
+  const handleImagePress = () => {
+    const now = Date.now();
+    if (now - lastTapRef.current < 300) {
+      lastTapRef.current = 0;
+      showHeart();
+      if (!isLiked) handleLike();
+    } else {
+      lastTapRef.current = now;
     }
   };
 
@@ -123,12 +171,28 @@ export default function Post({
         )}
       </View>
       {/* IMAGE */}
-      <Image
-        source={post.imageUrl}
-        style={styles.postImage}
-        contentFit="cover"
-        cachePolicy="memory-disk"
-      />
+      <Pressable onPress={handleImagePress}>
+        <Image
+          source={post.imageUrl}
+          style={styles.postImage}
+          contentFit="cover"
+          cachePolicy="memory-disk"
+        />
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              justifyContent: "center",
+              alignItems: "center",
+              opacity: heartOpacity,
+              transform: [{ scale: heartScale }],
+            },
+          ]}
+        >
+          <Ionicons name="heart" size={100} color={COLORS.white} />
+        </Animated.View>
+      </Pressable>
 
       {/* POST ACTIONS */}
       <View style={styles.postActions}>
