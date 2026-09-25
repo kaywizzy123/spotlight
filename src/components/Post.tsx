@@ -1,5 +1,7 @@
+import CommentsModal from "@/components/CommentsModal";
 import { COLORS } from "@/constants/theme";
 import { styles } from "@/styles/feed.styles";
+import { formatTimeAgo } from "@/utils/formatTimeAgo";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation } from "convex/react";
 import { Image } from "expo-image";
@@ -29,6 +31,7 @@ type PostProps = {
 export default function Post({ post }: PostProps) {
   const [isLiked, setIsLiked] = useState(post.isLiked);
   const [likesCount, setLikesCount] = useState(post.likes);
+  const [showComments, setShowComments] = useState(false);
 
   const toggleLike = useMutation(api.posts.toggleLike);
 
@@ -85,7 +88,7 @@ export default function Post({ post }: PostProps) {
               color={isLiked ? COLORS.primary : COLORS.white}
             />
           </TouchableOpacity>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => setShowComments(true)}>
             <Ionicons
               name="chatbubble-outline"
               size={24}
@@ -114,12 +117,26 @@ export default function Post({ post }: PostProps) {
           </View>
         )}
 
-        <TouchableOpacity>
-          <Text style={styles.commentsText}>View all 2 comments</Text>
-        </TouchableOpacity>
+        {post.comments > 0 && (
+          <TouchableOpacity onPress={() => setShowComments(true)}>
+            <Text style={styles.commentsText}>
+              {post.comments === 1
+                ? "View 1 comment"
+                : `View all ${post.comments.toLocaleString()} comments`}
+            </Text>
+          </TouchableOpacity>
+        )}
 
-        <Text style={styles.timeAgo}>2 hours ago</Text>
+        <Text style={styles.timeAgo}>
+          {formatTimeAgo(post._creationTime)}
+        </Text>
       </View>
+
+      <CommentsModal
+        postId={post._id}
+        visible={showComments}
+        onClose={() => setShowComments(false)}
+      />
     </View>
   );
 }
