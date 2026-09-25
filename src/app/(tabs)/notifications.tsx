@@ -1,15 +1,16 @@
 import { Loader } from "@/components/Loader";
 import Notification from "@/components/Notification";
-import { COLORS } from "@/constants/theme";
+import { useTheme } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
 import { useFocusEffect } from "expo-router";
 import { useCallback } from "react";
 import { FlatList, Text, View } from "react-native";
 import { api } from "../../../convex/_generated/api";
-import { styles } from "../../styles/notifications.styles";
+import { useNotificationStyles } from "../../styles/notifications.styles";
 
 export default function Notifications() {
+  const styles = useNotificationStyles();
   const notifications = useQuery(api.notifications.getNotifications);
   const markNotificationsSeen = useMutation(
     api.notifications.markNotificationsSeen,
@@ -48,11 +49,15 @@ export default function Notifications() {
   );
 }
 
-const NoNotificationsFound = () => (
-  <View style={[styles.container, styles.centered]}>
-    <Ionicons name="notifications-outline" size={48} color={COLORS.primary} />
-    <Text style={{ fontSize: 20, color: COLORS.white, marginTop: 12 }}>
-      No notifications yet
-    </Text>
-  </View>
-);
+const NoNotificationsFound = () => {
+  const colors = useTheme();
+  const styles = useNotificationStyles();
+  return (
+    <View style={[styles.container, styles.centered]}>
+      <Ionicons name="notifications-outline" size={48} color={colors.primary} />
+      <Text style={{ fontSize: 20, color: colors.text, marginTop: 12 }}>
+        No notifications yet
+      </Text>
+    </View>
+  );
+};

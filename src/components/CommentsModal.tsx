@@ -1,7 +1,7 @@
 import Comment from "@/components/Comment";
 import { Loader } from "@/components/Loader";
-import { COLORS } from "@/constants/theme";
-import { styles } from "@/styles/feed.styles";
+import { useTheme } from "@/constants/theme";
+import { useFeedStyles } from "@/styles/feed.styles";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
@@ -29,6 +29,8 @@ export default function CommentsModal({
   visible,
   onClose,
 }: CommentsModalProps) {
+  const colors = useTheme();
+  const styles = useFeedStyles();
   const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -69,7 +71,7 @@ export default function CommentsModal({
         {/* HEADER */}
         <View style={styles.modalHeader}>
           <TouchableOpacity onPress={onClose}>
-            <Ionicons name="close" size={24} color={COLORS.white} />
+            <Ionicons name="close" size={24} color={colors.text} />
           </TouchableOpacity>
           <Text style={styles.modalTitle}>Comments</Text>
           <View style={{ width: 24 }} />
@@ -88,7 +90,7 @@ export default function CommentsModal({
             keyboardShouldPersistTaps="handled"
             ListEmptyComponent={
               <View style={[styles.commentsList, styles.centered]}>
-                <Text style={{ color: COLORS.grey }}>
+                <Text style={{ color: colors.grey }}>
                   No comments yet. Start the conversation.
                 </Text>
               </View>
@@ -101,7 +103,7 @@ export default function CommentsModal({
           <TextInput
             style={styles.input}
             placeholder="Add a comment..."
-            placeholderTextColor={COLORS.grey}
+            placeholderTextColor={colors.grey}
             value={newComment}
             onChangeText={(text) => setNewComment(text.slice(0, 500))}
             multiline

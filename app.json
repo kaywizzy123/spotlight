@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "spotlight",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon"
     },
@@ -28,9 +28,13 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#000000",
+          "backgroundColor": "#FFFFFF",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 100
+          "imageWidth": 100,
+          "dark": {
+            "backgroundColor": "#000000",
+            "image": "./assets/images/splash-icon.png"
+          }
         }
       ],
       "@clerk/expo",

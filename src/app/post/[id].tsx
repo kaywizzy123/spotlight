@@ -1,16 +1,18 @@
 import { Loader } from "@/components/Loader";
 import Post from "@/components/Post";
-import { COLORS } from "@/constants/theme";
+import { useTheme } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "convex/react";
 import { router, useLocalSearchParams } from "expo-router";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { api } from "../../../convex/_generated/api";
 import { Id } from "../../../convex/_generated/dataModel";
-import { styles } from "../../styles/profile.styles";
+import { useProfileStyles } from "../../styles/profile.styles";
 
 // a single post on its own, e.g. opened from a notification
 export default function SinglePost() {
+  const colors = useTheme();
+  const styles = useProfileStyles();
   const { id, showComments } = useLocalSearchParams<{
     id: string;
     showComments?: string;
@@ -32,7 +34,7 @@ export default function SinglePost() {
       {/* HEADER */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBack}>
-          <Ionicons name="arrow-back" size={24} color={COLORS.white} />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Post</Text>
         <View style={{ width: 24 }} />
@@ -40,7 +42,7 @@ export default function SinglePost() {
 
       {post === null ? (
         <View style={styles.noPostsContainer}>
-          <Ionicons name="images-outline" size={48} color={COLORS.primary} />
+          <Ionicons name="images-outline" size={48} color={colors.primary} />
           <Text style={styles.noPostsText}>
             This post is no longer available
           </Text>

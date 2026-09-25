@@ -1,19 +1,20 @@
-import { COLORS } from "@/constants/theme";
+import { useTheme } from "@/constants/theme";
 import { useQuery } from "convex/react";
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { api } from "../../../convex/_generated/api";
 
 export default function TabLayout() {
+  const colors = useTheme();
   const hasUnreadNotifications = useQuery(
     api.notifications.hasUnreadNotifications,
   );
 
   return (
     <NativeTabs
-      backgroundColor="black"
-      tintColor={COLORS.primary}
-      badgeBackgroundColor={COLORS.primary}
-      iconColor={{ default: COLORS.grey, selected: COLORS.primary }}
+      backgroundColor={colors.background}
+      tintColor={colors.primary}
+      badgeBackgroundColor={colors.primary}
+      iconColor={{ default: colors.grey, selected: colors.primary }}
     >
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label hidden />

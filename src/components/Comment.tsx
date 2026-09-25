@@ -1,4 +1,4 @@
-import { styles } from "@/styles/feed.styles";
+import { useFeedStyles } from "@/styles/feed.styles";
 import { formatTimeAgo } from "@/utils/formatTimeAgo";
 import { Image } from "expo-image";
 import { Text, View } from "react-native";
@@ -15,6 +15,7 @@ type CommentProps = {
 };
 
 export default function Comment({ comment }: CommentProps) {
+  const styles = useFeedStyles();
   return (
     <View style={styles.commentContainer}>
       <Image

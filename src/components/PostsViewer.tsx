@@ -1,13 +1,13 @@
 import { Loader } from "@/components/Loader";
 import Post from "@/components/Post";
-import { COLORS } from "@/constants/theme";
+import { useTheme } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { FunctionReturnType } from "convex/server";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import { api } from "../../convex/_generated/api";
-import { styles } from "../styles/profile.styles";
+import { useProfileStyles } from "../styles/profile.styles";
 
 type PostItem = FunctionReturnType<
   typeof api.posts.getUserPostsWithInfo
@@ -29,6 +29,8 @@ export default function PostsViewer({
   initialPostId,
   keepRemoved = false,
 }: PostsViewerProps) {
+  const colors = useTheme();
+  const styles = useProfileStyles();
   // start with the tapped post at the top, then add the earlier ones above it
   const [showEarlier, setShowEarlier] = useState(!initialPostId);
   const [kept, setKept] = useState(() => posts ?? []);
@@ -81,7 +83,7 @@ export default function PostsViewer({
       {/* HEADER */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBack}>
-          <Ionicons name="arrow-back" size={24} color={COLORS.white} />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{title}</Text>
         <View style={{ width: 24 }} />

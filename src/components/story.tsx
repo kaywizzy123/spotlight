@@ -1,5 +1,5 @@
-import { COLORS } from "@/constants/theme";
-import { styles } from "@/styles/feed.styles";
+import { FIXED } from "@/constants/theme";
+import { useFeedStyles } from "@/styles/feed.styles";
 import { Ionicons } from "@expo/vector-icons";
 import { FunctionReturnType } from "convex/server";
 import { Image } from "expo-image";
@@ -24,6 +24,7 @@ export default function Story({
   onAdd,
   isUploading = false,
 }: StoryProps) {
+  const styles = useFeedStyles();
   const hasStories = entry.stories.length > 0;
 
   return (
@@ -47,7 +48,7 @@ export default function Story({
         />
         {isUploading && (
           <View style={styles.storyUploading}>
-            <ActivityIndicator color={COLORS.white} />
+            <ActivityIndicator color={FIXED.white} />
           </View>
         )}
         {onAdd && (
@@ -56,7 +57,7 @@ export default function Story({
             onPress={onAdd}
             disabled={isUploading}
           >
-            <Ionicons name="add" size={14} color={COLORS.white} />
+            <Ionicons name="add" size={14} color={FIXED.white} />
           </TouchableOpacity>
         )}
       </View>

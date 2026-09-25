@@ -1,13 +1,15 @@
-import { COLORS } from "@/constants/theme";
+import { useTheme } from "@/constants/theme";
 import { useSSO } from "@clerk/expo";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { Text, TouchableOpacity, View } from "react-native";
-import { styles } from "../../styles/auth.styles";
+import { useAuthStyles } from "../../styles/auth.styles";
 
 export default function Login() {
+  const colors = useTheme();
+  const styles = useAuthStyles();
   const { startSSOFlow } = useSSO();
   const router = useRouter();
 
@@ -36,7 +38,7 @@ export default function Login() {
               web: "star_half",
             }}
             size={32}
-            tintColor={COLORS.primary}
+            tintColor={colors.primary}
           />
         </View>
         <Text style={styles.title}>spotlight</Text>
@@ -54,7 +56,7 @@ export default function Login() {
           handleGoogleSignIn();
         }}
       >
-        <Ionicons name="logo-google" size={20} color={COLORS.background} />
+        <Ionicons name="logo-google" size={20} color={colors.background} />
         <Text style={styles.googleButtonText}>Continue with Google</Text>
       </TouchableOpacity>
       <Text style={styles.termsText}>

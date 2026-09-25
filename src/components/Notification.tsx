@@ -1,5 +1,5 @@
-import { COLORS } from "@/constants/theme";
-import { styles } from "@/styles/notifications.styles";
+import { useTheme } from "@/constants/theme";
+import { useNotificationStyles } from "@/styles/notifications.styles";
 import { formatTimeAgo } from "@/utils/formatTimeAgo";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
@@ -26,6 +26,8 @@ type NotificationProps = {
 };
 
 export default function Notification({ notification }: NotificationProps) {
+  const colors = useTheme();
+  const styles = useNotificationStyles();
   const openSenderProfile = () => {
     if (!notification.sender._id) return;
     router.push({
@@ -62,7 +64,7 @@ export default function Notification({ notification }: NotificationProps) {
           />
           <View style={styles.iconBadge}>
             {notification.type === "like" ? (
-              <Ionicons name="heart" size={14} color={COLORS.primary} />
+              <Ionicons name="heart" size={14} color={colors.primary} />
             ) : notification.type === "follow" ? (
               <Ionicons name="person-add" size={14} color="#8B5CF6" />
             ) : (

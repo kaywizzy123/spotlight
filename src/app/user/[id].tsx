@@ -1,5 +1,5 @@
 import { Loader } from "@/components/Loader";
-import { COLORS } from "@/constants/theme";
+import { useTheme } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
 import { Image } from "expo-image";
@@ -7,9 +7,11 @@ import { router, useLocalSearchParams } from "expo-router";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import { api } from "../../../convex/_generated/api";
 import { Id } from "../../../convex/_generated/dataModel";
-import { styles } from "../../styles/profile.styles";
+import { useProfileStyles } from "../../styles/profile.styles";
 
 export default function UserProfile() {
+  const colors = useTheme();
+  const styles = useProfileStyles();
   const { id } = useLocalSearchParams<{ id: string }>();
   const userId = id as Id<"users">;
 
@@ -39,7 +41,7 @@ export default function UserProfile() {
       {/* HEADER */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBack}>
-          <Ionicons name="arrow-back" size={24} color={COLORS.white} />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{profile.username}</Text>
         <View style={{ width: 24 }} />
@@ -105,7 +107,7 @@ export default function UserProfile() {
         }
         ListEmptyComponent={
           <View style={styles.noPostsContainer}>
-            <Ionicons name="images-outline" size={48} color={COLORS.primary} />
+            <Ionicons name="images-outline" size={48} color={colors.primary} />
             <Text style={styles.noPostsText}>No posts yet</Text>
           </View>
         }

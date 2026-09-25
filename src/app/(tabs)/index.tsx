@@ -1,7 +1,7 @@
 import { Loader } from "@/components/Loader";
 import Post from "@/components/Post";
 import Story from "@/components/story";
-import { COLORS } from "@/constants/theme";
+import { useTheme } from "@/constants/theme";
 import { uploadImage } from "@/utils/uploadImage";
 import { useAuth } from "@clerk/expo";
 import { Ionicons } from "@expo/vector-icons";
@@ -18,9 +18,11 @@ import {
   View,
 } from "react-native";
 import { api } from "../../../convex/_generated/api";
-import { styles } from "../../styles/feed.styles";
+import { useFeedStyles } from "../../styles/feed.styles";
 
 export default function Index() {
+  const colors = useTheme();
+  const styles = useFeedStyles();
   const { signOut } = useAuth();
 
   const {
@@ -37,7 +39,7 @@ export default function Index() {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>spotlight</Text>
         <TouchableOpacity onPress={() => signOut()}>
-          <Ionicons name="log-out-outline" size={24} color={COLORS.white} />
+          <Ionicons name="log-out-outline" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -60,6 +62,7 @@ export default function Index() {
 }
 
 const StoriesSection = () => {
+  const styles = useFeedStyles();
   const storiesFeed = useQuery(api.stories.getStoriesFeed);
   const generateUploadUrl = useMutation(api.posts.generateUploadUrl);
   const createStory = useMutation(api.stories.createStory);
@@ -111,16 +114,19 @@ const StoriesSection = () => {
   );
 };
 
-const NoPostsFound = () => (
-  <View
-    style={{
-      flex: 1,
-      paddingVertical: 80,
-      backgroundColor: COLORS.background,
-      justifyContent: "center",
-      alignItems: "center",
-    }}
-  >
-    <Text style={{ fontSize: 20, color: COLORS.primary }}>No posts yet</Text>
-  </View>
-);
+const NoPostsFound = () => {
+  const colors = useTheme();
+  return (
+    <View
+      style={{
+        flex: 1,
+        paddingVertical: 80,
+        backgroundColor: colors.background,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <Text style={{ fontSize: 20, color: colors.primary }}>No posts yet</Text>
+    </View>
+  );
+};

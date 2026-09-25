@@ -1,5 +1,5 @@
-import { COLORS } from "@/constants/theme";
-import { styles } from "@/styles/profile.styles";
+import { useTheme } from "@/constants/theme";
+import { useProfileStyles } from "@/styles/profile.styles";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
@@ -31,6 +31,8 @@ export default function EditCaptionModal({
   visible,
   onClose,
 }: EditCaptionModalProps) {
+  const colors = useTheme();
+  const styles = useProfileStyles();
   const updateCaption = useMutation(api.posts.updateCaption);
 
   const [draft, setDraft] = useState(caption ?? "");
@@ -80,7 +82,7 @@ export default function EditCaptionModal({
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Edit Caption</Text>
               <TouchableOpacity onPress={onClose}>
-                <Ionicons name="close" size={24} color={COLORS.white} />
+                <Ionicons name="close" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
 
@@ -90,7 +92,7 @@ export default function EditCaptionModal({
                 value={draft}
                 onChangeText={setDraft}
                 placeholder="Write a caption..."
-                placeholderTextColor={COLORS.grey}
+                placeholderTextColor={colors.grey}
                 multiline
                 autoFocus
               />

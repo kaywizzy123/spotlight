@@ -1,4 +1,4 @@
-import { COLORS } from "@/constants/theme";
+import { FIXED, useTheme } from "@/constants/theme";
 import { useUser } from "@clerk/expo";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -14,7 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { styles } from "../../styles/create.styles";
+import { useCreateStyles } from "../../styles/create.styles";
 import { uploadImage } from "../../utils/uploadImage";
 
 import { useMutation } from "convex/react";
@@ -22,6 +22,8 @@ import { Image } from "expo-image";
 import { api } from "../../../convex/_generated/api";
 
 export default function Create() {
+  const colors = useTheme();
+  const styles = useCreateStyles();
   const router = useRouter();
   const { user } = useUser();
 
@@ -69,7 +71,7 @@ export default function Create() {
       <View style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={28} color={COLORS.primary} />
+            <Ionicons name="arrow-back" size={28} color={colors.primary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>New Post</Text>
           <View style={{ width: 28 }} />
@@ -79,7 +81,7 @@ export default function Create() {
           style={styles.emptyImageContainer}
           onPress={pickImage}
         >
-          <Ionicons name="image-outline" size={48} color={COLORS.grey} />
+          <Ionicons name="image-outline" size={48} color={colors.grey} />
           <Text style={styles.emptyImageText}>Tap to select an image</Text>
         </TouchableOpacity>
       </View>
@@ -104,7 +106,7 @@ export default function Create() {
             <Ionicons
               name="close-outline"
               size={28}
-              color={isSharing ? COLORS.grey : COLORS.white}
+              color={isSharing ? colors.grey : colors.text}
             />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>New Post</Text>
@@ -117,7 +119,7 @@ export default function Create() {
             onPress={handleShare}
           >
             {isSharing ? (
-              <ActivityIndicator size="small" color={COLORS.primary} />
+              <ActivityIndicator size="small" color={colors.primary} />
             ) : (
               <Text style={styles.shareText}>Share</Text>
             )}
@@ -142,7 +144,7 @@ export default function Create() {
                 style={styles.changeImageButton}
                 onPress={pickImage}
               >
-                <Ionicons name="image-outline" size={20} color={COLORS.white} />
+                <Ionicons name="image-outline" size={20} color={FIXED.white} />
                 <Text style={styles.changeImageText}>Change</Text>
               </TouchableOpacity>
             </View>
@@ -158,7 +160,7 @@ export default function Create() {
                 <TextInput
                   style={styles.captionInput}
                   placeholder="Write a caption..."
-                  placeholderTextColor={COLORS.grey}
+                  placeholderTextColor={colors.grey}
                   multiline
                   value={caption}
                   onChangeText={setCaption}

@@ -1,11 +1,11 @@
 // styles/stories.styles.ts
-import { COLORS } from "@/constants/theme";
+import { FIXED } from "@/constants/theme";
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "black",
+    backgroundColor: FIXED.black,
   },
   content: {
     flex: 1,
@@ -33,7 +33,7 @@ export const styles = StyleSheet.create({
   },
   progressFill: {
     height: "100%",
-    backgroundColor: COLORS.white,
+    backgroundColor: FIXED.white,
   },
   header: {
     position: "absolute",
@@ -56,7 +56,7 @@ export const styles = StyleSheet.create({
     borderRadius: 16,
   },
   username: {
-    color: COLORS.white,
+    color: FIXED.white,
     fontSize: 14,
     fontWeight: "600",
   },

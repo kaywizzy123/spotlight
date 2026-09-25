@@ -1,5 +1,5 @@
 import { Loader } from "@/components/Loader";
-import { COLORS } from "@/constants/theme";
+import { useTheme } from "@/constants/theme";
 import { useAuth } from "@clerk/expo";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
@@ -20,9 +20,11 @@ import {
   View,
 } from "react-native";
 import { api } from "../../../convex/_generated/api";
-import { styles } from "../../styles/profile.styles";
+import { useProfileStyles } from "../../styles/profile.styles";
 
 export default function Profile() {
+  const colors = useTheme();
+  const styles = useProfileStyles();
   const { signOut } = useAuth();
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
 
@@ -81,7 +83,7 @@ export default function Profile() {
         </View>
         <View style={styles.headerRight}>
           <TouchableOpacity style={styles.headerIcon} onPress={() => signOut()}>
-            <Ionicons name="log-out-outline" size={24} color={COLORS.white} />
+            <Ionicons name="log-out-outline" size={24} color={colors.text} />
           </TouchableOpacity>
         </View>
       </View>
@@ -134,7 +136,7 @@ export default function Profile() {
                 <Text style={styles.editButtonText}>Edit Profile</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.shareButton}>
-                <Ionicons name="share-outline" size={20} color={COLORS.white} />
+                <Ionicons name="share-outline" size={20} color={colors.text} />
               </TouchableOpacity>
             </View>
           </View>
@@ -177,7 +179,7 @@ export default function Profile() {
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>Edit Profile</Text>
                 <TouchableOpacity onPress={() => setIsEditModalVisible(false)}>
-                  <Ionicons name="close" size={24} color={COLORS.white} />
+                  <Ionicons name="close" size={24} color={colors.text} />
                 </TouchableOpacity>
               </View>
 
@@ -189,7 +191,7 @@ export default function Profile() {
                   onChangeText={(text) =>
                     setEditedProfile((prev) => ({ ...prev, fullname: text }))
                   }
-                  placeholderTextColor={COLORS.grey}
+                  placeholderTextColor={colors.grey}
                 />
               </View>
 
@@ -204,7 +206,7 @@ export default function Profile() {
                   autoCapitalize="none"
                   autoCorrect={false}
                   maxLength={30}
-                  placeholderTextColor={COLORS.grey}
+                  placeholderTextColor={colors.grey}
                 />
               </View>
 
@@ -218,7 +220,7 @@ export default function Profile() {
                   }
                   multiline
                   numberOfLines={4}
-                  placeholderTextColor={COLORS.grey}
+                  placeholderTextColor={colors.grey}
                 />
               </View>
 
@@ -246,9 +248,11 @@ export default function Profile() {
 }
 
 function NoPostsFound() {
+  const colors = useTheme();
+  const styles = useProfileStyles();
   return (
     <View style={styles.noPostsContainer}>
-      <Ionicons name="images-outline" size={48} color={COLORS.primary} />
+      <Ionicons name="images-outline" size={48} color={colors.primary} />
       <Text style={styles.noPostsText}>No posts yet</Text>
     </View>
   );

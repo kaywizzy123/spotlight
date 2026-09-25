@@ -1,6 +1,6 @@
 import { Loader } from "@/components/Loader";
 import { StoryEntry } from "@/components/story";
-import { COLORS } from "@/constants/theme";
+import { FIXED } from "@/constants/theme";
 import { styles } from "@/styles/stories.styles";
 import { formatTimeAgo } from "@/utils/formatTimeAgo";
 import { Ionicons } from "@expo/vector-icons";
@@ -252,11 +252,11 @@ export default function StoryViewer() {
           <View style={styles.headerActions}>
             {entry.isOwn && (
               <TouchableOpacity onPress={handleDelete}>
-                <Ionicons name="trash-outline" size={22} color={COLORS.white} />
+                <Ionicons name="trash-outline" size={22} color={FIXED.white} />
               </TouchableOpacity>
             )}
             <TouchableOpacity onPress={close}>
-              <Ionicons name="close" size={28} color={COLORS.white} />
+              <Ionicons name="close" size={28} color={FIXED.white} />
             </TouchableOpacity>
           </View>
         </View>

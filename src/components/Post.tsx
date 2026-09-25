@@ -1,7 +1,7 @@
 import CommentsModal from "@/components/CommentsModal";
 import EditCaptionModal from "@/components/EditCaptionModal";
-import { COLORS } from "@/constants/theme";
-import { styles } from "@/styles/feed.styles";
+import { FIXED, useTheme } from "@/constants/theme";
+import { useFeedStyles } from "@/styles/feed.styles";
 import { formatTimeAgo } from "@/utils/formatTimeAgo";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
@@ -42,6 +42,8 @@ type PostProps = {
   initialShowComments?: boolean;
 };
 function Post({ post, onDeleted, initialShowComments = false }: PostProps) {
+  const colors = useTheme();
+  const styles = useFeedStyles();
   // like/bookmark state comes live from the server; these only hold an
   // instant local answer while a tap is being saved
   const [pendingLike, setPendingLike] = useState<boolean | null>(null);
@@ -197,7 +199,7 @@ function Post({ post, onDeleted, initialShowComments = false }: PostProps) {
             <Ionicons
               name="ellipsis-horizontal"
               size={20}
-              color={COLORS.white}
+              color={colors.text}
             />
           </TouchableOpacity>
         ) : (
@@ -205,7 +207,7 @@ function Post({ post, onDeleted, initialShowComments = false }: PostProps) {
             <Ionicons
               name="ellipsis-horizontal"
               size={20}
-              color={COLORS.white}
+              color={colors.text}
             />
           </TouchableOpacity>
         )}
@@ -230,7 +232,7 @@ function Post({ post, onDeleted, initialShowComments = false }: PostProps) {
             },
           ]}
         >
-          <Ionicons name="heart" size={100} color={COLORS.white} />
+          <Ionicons name="heart" size={100} color={FIXED.white} />
         </Animated.View>
       </Pressable>
 
@@ -241,22 +243,18 @@ function Post({ post, onDeleted, initialShowComments = false }: PostProps) {
             <Ionicons
               name={isLiked ? "heart" : "heart-outline"}
               size={24}
-              color={isLiked ? COLORS.primary : COLORS.white}
+              color={isLiked ? colors.primary : colors.text}
             />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => setShowComments(true)}>
-            <Ionicons
-              name="chatbubble-outline"
-              size={24}
-              color={COLORS.white}
-            />
+            <Ionicons name="chatbubble-outline" size={24} color={colors.text} />
           </TouchableOpacity>
         </View>
         <TouchableOpacity onPress={handleBookmark}>
           <Ionicons
             name={isBookmarked ? "bookmark" : "bookmark-outline"}
             size={24}
-            color={COLORS.white}
+            color={colors.text}
           />
         </TouchableOpacity>
       </View>

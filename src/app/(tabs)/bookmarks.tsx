@@ -1,13 +1,14 @@
 import { Loader } from "@/components/Loader";
-import { COLORS } from "@/constants/theme";
+import { useTheme } from "@/constants/theme";
 import { useQuery } from "convex/react";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import { api } from "../../../convex/_generated/api";
-import { styles } from "../../styles/feed.styles";
+import { useFeedStyles } from "../../styles/feed.styles";
 
 export default function Bookmarks() {
+  const styles = useFeedStyles();
   const bookmarkedPosts = useQuery(api.bookmarks.getBookmarkedPosts);
 
   if (bookmarkedPosts === undefined) return <Loader />;
@@ -52,17 +53,20 @@ export default function Bookmarks() {
   );
 }
 
-const NoBookmarksFound = () => (
-  <View
-    style={{
-      flex: 1,
-      backgroundColor: COLORS.background,
-      justifyContent: "center",
-      alignItems: "center",
-    }}
-  >
-    <Text style={{ fontSize: 22, color: COLORS.primary }}>
-      No bookmarked posts yet
-    </Text>
-  </View>
-);
+const NoBookmarksFound = () => {
+  const colors = useTheme();
+  return (
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: colors.background,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <Text style={{ fontSize: 22, color: colors.primary }}>
+        No bookmarked posts yet
+      </Text>
+    </View>
+  );
+};
