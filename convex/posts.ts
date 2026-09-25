@@ -127,3 +127,57 @@ export const toggleLike = mutation({
     }
   },
 });
+
+export const deletePost = mutation({
+  args: { postId: v.id("posts") },
+  handler: async (ctx, args) => {
+    const currentUser = await getAuthenticatedUser(ctx);
+
+    const post = await ctx.db.get("posts", args.postId);
+    if (!post) throw new Error("Post not found");
+
+    // only the owner can delete their post
+    if (post.userId !== currentUser._id) {
+      throw new Error("Not authorized to delete this post");
+    }
+
+    // delete associated likes
+    for await (const like of ctx.db
+      .query("likes")
+      .withIndex("by_post", (q) => q.eq("postId", args.postId))) {
+      await ctx.db.delete("likes", like._id);
+    }
+
+    // delete associated comments
+    for await (const comment of ctx.db
+      .query("comments")
+      .withIndex("by_post", (q) => q.eq("postId", args.postId))) {
+      await ctx.db.delete("comments", comment._id);
+    }
+
+    // delete associated bookmarks
+    for await (const bookmark of ctx.db
+      .query("bookmarks")
+      .withIndex("by_post", (q) => q.eq("postId", args.postId))) {
+      await ctx.db.delete("bookmarks", bookmark._id);
+    }
+
+    // delete associated notifications
+    for await (const notification of ctx.db
+      .query("notifications")
+      .withIndex("by_post", (q) => q.eq("postId", args.postId))) {
+      await ctx.db.delete("notifications", notification._id);
+    }
+
+    // delete the image from storage
+    await ctx.storage.delete(post.storageId);
+
+    // delete the post
+    await ctx.db.delete("posts", args.postId);
+
+    // decrement user's post count by 1
+    await ctx.db.patch("users", currentUser._id, {
+      posts: Math.max(0, currentUser.posts - 1),
+    });
+  },
+});

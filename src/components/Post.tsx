@@ -3,11 +3,11 @@ import { COLORS } from "@/constants/theme";
 import { styles } from "@/styles/feed.styles";
 import { formatTimeAgo } from "@/utils/formatTimeAgo";
 import { Ionicons } from "@expo/vector-icons";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { Image } from "expo-image";
 import { Link } from "expo-router";
 import { useState } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Alert, Text, TouchableOpacity, View } from "react-native";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 
@@ -36,6 +36,9 @@ export default function Post({ post }: PostProps) {
 
   const toggleLike = useMutation(api.posts.toggleLike);
   const toggleBookmark = useMutation(api.bookmarks.toggleBookmark);
+  const deletePost = useMutation(api.posts.deletePost);
+
+  const currentUser = useQuery(api.users.getCurrentUser);
 
   const handleLike = async () => {
     try {
@@ -55,6 +58,25 @@ export default function Post({ post }: PostProps) {
       console.error("Error toggling bookmark:", error);
     }
   };
+
+  const handleDelete = () => {
+    Alert.alert("Delete post", "Are you sure you want to delete this post?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await deletePost({ postId: post._id });
+          } catch (error) {
+            console.error("Error deleting post:", error);
+            Alert.alert("Error", "Could not delete post. Please try again.");
+          }
+        },
+      },
+    ]);
+  };
+
   return (
     <View style={styles.post}>
       {/* POST HEADER */}
@@ -72,14 +94,19 @@ export default function Post({ post }: PostProps) {
           </TouchableOpacity>
         </Link>
 
-        {/* todo: fix it later */}
-        {/* <TouchableOpacity>
-          <Ionicons name="ellipsis-horizontal" size={20} color={COLORS.white} />
-        </TouchableOpacity> */}
-
-        <TouchableOpacity>
-          <Ionicons name="trash-outline" size={20} color={COLORS.primary} />
-        </TouchableOpacity>
+        {post.author._id === currentUser?._id ? (
+          <TouchableOpacity onPress={handleDelete}>
+            <Ionicons name="trash-outline" size={20} color={COLORS.primary} />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity>
+            <Ionicons
+              name="ellipsis-horizontal"
+              size={20}
+              color={COLORS.white}
+            />
+          </TouchableOpacity>
+        )}
       </View>
       {/* IMAGE */}
       <Image
@@ -142,9 +169,7 @@ export default function Post({ post }: PostProps) {
           </TouchableOpacity>
         )}
 
-        <Text style={styles.timeAgo}>
-          {formatTimeAgo(post._creationTime)}
-        </Text>
+        <Text style={styles.timeAgo}>{formatTimeAgo(post._creationTime)}</Text>
       </View>
 
       <CommentsModal

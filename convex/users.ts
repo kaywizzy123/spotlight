@@ -1,5 +1,10 @@
 import { v } from "convex/values";
-import { internalMutation, MutationCtx, QueryCtx } from "./_generated/server";
+import {
+  internalMutation,
+  MutationCtx,
+  query,
+  QueryCtx,
+} from "./_generated/server";
 
 // Create a user from a Clerk webhook event
 export const createUser = internalMutation({
@@ -48,3 +53,17 @@ export async function getAuthenticatedUser(ctx: QueryCtx | MutationCtx) {
 
   return currentUser;
 }
+
+// Current signed-in user, or null if not signed in / not yet synced
+export const getCurrentUser = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+
+    return await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .first();
+  },
+});
