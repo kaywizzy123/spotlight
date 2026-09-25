@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { internalMutation } from "./_generated/server";
+import { internalMutation, MutationCtx, QueryCtx } from "./_generated/server";
 
 // Create a user from a Clerk webhook event
 export const createUser = internalMutation({
@@ -34,3 +34,17 @@ export const createUser = internalMutation({
     });
   },
 });
+
+export async function getAuthenticatedUser(ctx: QueryCtx | MutationCtx) {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) throw new Error("Unauthorized");
+
+  const currentUser = await ctx.db
+    .query("users")
+    .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+    .first();
+
+  if (!currentUser) throw new Error("User not found");
+
+  return currentUser;
+}

@@ -1,10 +1,8 @@
-import { Text, View } from "react-native";
+import { useAuth } from "@clerk/expo";
+import { View } from "react-native";
 import { styles } from "../../styles/auth.styles";
 
 export default function Index() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Home</Text>
-    </View>
-  );
+  const { signOut } = useAuth();
+  return <View style={styles.container}>{/* HEADER */}</View>;
 }
