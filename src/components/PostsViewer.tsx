@@ -40,7 +40,10 @@ export default function PostsViewer({
     setPrevPosts(posts);
     if (posts) {
       const latest = new Map(posts.map((post) => [post._id, post]));
-      const merged = kept.map((post) => latest.get(post._id) ?? post);
+      // a kept post that dropped out was unbookmarked, so show it that way
+      const merged = kept.map(
+        (post) => latest.get(post._id) ?? { ...post, isBookmarked: false },
+      );
       const keptIds = new Set(kept.map((post) => post._id));
       setKept([...merged, ...posts.filter((post) => !keptIds.has(post._id))]);
     }

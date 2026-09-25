@@ -1,4 +1,4 @@
-import { query } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { getAuthenticatedUser } from "./users";
 
 export const getNotifications = query({
@@ -39,5 +39,39 @@ export const getNotifications = query({
     );
 
     return notificationsWithInfo;
+  },
+});
+
+// true if a notification arrived since the user last opened notifications
+export const hasUnreadNotifications = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return false;
+
+    const currentUser = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .first();
+    if (!currentUser) return false;
+
+    const latest = await ctx.db
+      .query("notifications")
+      .withIndex("by_receiver", (q) => q.eq("receiverId", currentUser._id))
+      .order("desc")
+      .first();
+    if (!latest) return false;
+
+    return latest._creationTime > (currentUser.notificationsSeenAt ?? 0);
+  },
+});
+
+export const markNotificationsSeen = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const currentUser = await getAuthenticatedUser(ctx);
+    await ctx.db.patch("users", currentUser._id, {
+      notificationsSeenAt: Date.now(),
+    });
   },
 });

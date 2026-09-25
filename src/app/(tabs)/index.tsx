@@ -5,7 +5,7 @@ import { COLORS } from "@/constants/theme";
 import { uploadImage } from "@/utils/uploadImage";
 import { useAuth } from "@clerk/expo";
 import { Ionicons } from "@expo/vector-icons";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -23,9 +23,13 @@ import { styles } from "../../styles/feed.styles";
 export default function Index() {
   const { signOut } = useAuth();
 
-  const posts = useQuery(api.posts.getFeedPosts);
+  const {
+    results: posts,
+    status,
+    loadMore,
+  } = usePaginatedQuery(api.posts.getFeedPosts, {}, { initialNumItems: 10 });
 
-  if (posts === undefined) return <Loader />;
+  if (status === "LoadingFirstPage") return <Loader />;
 
   return (
     <View style={styles.container}>
@@ -45,6 +49,11 @@ export default function Index() {
         contentContainerStyle={{ paddingBottom: 60 }}
         ListHeaderComponent={<StoriesSection />}
         ListEmptyComponent={<NoPostsFound />}
+        // fetch the next page as you near the bottom
+        onEndReached={() => {
+          if (status === "CanLoadMore") loadMore(10);
+        }}
+        onEndReachedThreshold={0.5}
       />
     </View>
   );

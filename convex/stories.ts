@@ -54,8 +54,7 @@ export const getStoriesFeed = query({
 
     const entries = await Promise.all(
       userIds.map(async (userId) => {
-        const user = await ctx.db.get("users", userId);
-        if (!user) return null;
+        const isOwn = userId === currentUser._id;
 
         // expired stories are deleted, so everything here is live; oldest first
         const stories = await ctx.db
@@ -63,7 +62,11 @@ export const getStoriesFeed = query({
           .withIndex("by_user", (q) => q.eq("userId", userId))
           .take(50);
 
-        const isOwn = userId === currentUser._id;
+        // only load profiles for people with something to show
+        if (!isOwn && stories.length === 0) return null;
+        const user = isOwn ? currentUser : await ctx.db.get("users", userId);
+        if (!user) return null;
+
         const storiesWithSeen = await Promise.all(
           stories.map(async (story) => {
             const view = isOwn
@@ -98,8 +101,7 @@ export const getStoriesFeed = query({
 
     // unseen first, then most recently posted
     const othersWithStories = others
-      .filter((entry) => entry !== null && entry.stories.length > 0)
-      .map((entry) => entry!)
+      .filter((entry) => entry !== null)
       .sort(
         (a, b) =>
           Number(b.hasUnseen) - Number(a.hasUnseen) || b.latest - a.latest,

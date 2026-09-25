@@ -12,6 +12,8 @@ export default defineSchema({
     following: v.number(),
     posts: v.number(),
     clerkId: v.string(),
+    // when the user last opened notifications, for the unread dot
+    notificationsSeenAt: v.optional(v.number()),
   })
     .index("by_clerk_id", ["clerkId"])
     .index("by_username", ["username"]),

@@ -1,4 +1,5 @@
-import { v } from "convex/values";
+import { paginationOptsValidator } from "convex/server";
+import { ConvexError, v } from "convex/values";
 import { Doc, Id } from "./_generated/dataModel";
 import { mutation, query, QueryCtx } from "./_generated/server";
 import { getAuthenticatedUser } from "./users";
@@ -76,21 +77,23 @@ export async function withPostInfo(
   };
 }
 
+// newest posts first, a page at a time
 export const getFeedPosts = query({
-  handler: async (ctx) => {
+  args: { paginationOpts: paginationOptsValidator },
+  handler: async (ctx, args) => {
     const currentUser = await getAuthenticatedUser(ctx);
 
-    // get all posts
-    const posts = await ctx.db.query("posts").order("desc").collect();
-
-    if (posts.length === 0) return [];
+    const result = await ctx.db
+      .query("posts")
+      .order("desc")
+      .paginate(args.paginationOpts);
 
     //enhance posts with userdata and interaction
-    const postsWithInfo = await Promise.all(
-      posts.map((post) => withPostInfo(ctx, post, currentUser._id)),
+    const page = await Promise.all(
+      result.page.map((post) => withPostInfo(ctx, post, currentUser._id)),
     );
 
-    return postsWithInfo;
+    return { ...result, page };
   },
 });
 
@@ -235,5 +238,33 @@ export const getPostById = query({
     if (!post) return null;
 
     return await withPostInfo(ctx, post, currentUser._id);
+  },
+});
+
+const MAX_CAPTION_LENGTH = 2200;
+
+export const updateCaption = mutation({
+  args: { postId: v.id("posts"), caption: v.string() },
+  handler: async (ctx, args) => {
+    const currentUser = await getAuthenticatedUser(ctx);
+
+    const post = await ctx.db.get("posts", args.postId);
+    if (!post) throw new ConvexError("Post not found");
+
+    // only the owner can edit their post
+    if (post.userId !== currentUser._id) {
+      throw new ConvexError("Not authorized to edit this post");
+    }
+
+    const caption = args.caption.trim();
+    if (caption.length > MAX_CAPTION_LENGTH) {
+      throw new ConvexError(
+        `Captions can be at most ${MAX_CAPTION_LENGTH} characters`,
+      );
+    }
+
+    await ctx.db.patch("posts", args.postId, {
+      caption: caption || undefined,
+    });
   },
 });

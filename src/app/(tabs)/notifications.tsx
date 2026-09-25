@@ -2,13 +2,29 @@ import { Loader } from "@/components/Loader";
 import Notification from "@/components/Notification";
 import { COLORS } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
+import { useFocusEffect } from "expo-router";
+import { useCallback } from "react";
 import { FlatList, Text, View } from "react-native";
 import { api } from "../../../convex/_generated/api";
 import { styles } from "../../styles/notifications.styles";
 
 export default function Notifications() {
   const notifications = useQuery(api.notifications.getNotifications);
+  const markNotificationsSeen = useMutation(
+    api.notifications.markNotificationsSeen,
+  );
+
+  // clear the tab dot while you're here, including for ones that arrive now
+  const latestId = notifications?.[0]?._id;
+  useFocusEffect(
+    useCallback(() => {
+      if (!latestId) return;
+      markNotificationsSeen().catch((error) =>
+        console.error("Error marking notifications seen:", error),
+      );
+    }, [latestId, markNotificationsSeen]),
+  );
 
   if (notifications === undefined) return <Loader />;
 

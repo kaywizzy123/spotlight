@@ -1,4 +1,5 @@
 import CommentsModal from "@/components/CommentsModal";
+import EditCaptionModal from "@/components/EditCaptionModal";
 import { COLORS } from "@/constants/theme";
 import { styles } from "@/styles/feed.styles";
 import { formatTimeAgo } from "@/utils/formatTimeAgo";
@@ -6,10 +7,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
 import { Image } from "expo-image";
 import { Link } from "expo-router";
-import { useRef, useState } from "react";
+import { memo, useRef, useState } from "react";
 import {
+  ActionSheetIOS,
   Alert,
   Animated,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -38,15 +41,13 @@ type PostProps = {
   onDeleted?: () => void;
   initialShowComments?: boolean;
 };
-export default function Post({
-  post,
-  onDeleted,
-  initialShowComments = false,
-}: PostProps) {
-  const [isLiked, setIsLiked] = useState(post.isLiked);
-  const [likesCount, setLikesCount] = useState(post.likes);
+function Post({ post, onDeleted, initialShowComments = false }: PostProps) {
+  // like/bookmark state comes live from the server; these only hold an
+  // instant local answer while a tap is being saved
+  const [pendingLike, setPendingLike] = useState<boolean | null>(null);
+  const [pendingBookmark, setPendingBookmark] = useState<boolean | null>(null);
   const [showComments, setShowComments] = useState(initialShowComments);
-  const [isBookmarked, setIsBookmarked] = useState(post.isBookmarked);
+  const [showEditCaption, setShowEditCaption] = useState(false);
 
   const toggleLike = useMutation(api.posts.toggleLike);
   const toggleBookmark = useMutation(api.bookmarks.toggleBookmark);
@@ -59,17 +60,24 @@ export default function Post({
   const lastTapRef = useRef(0);
   const likePendingRef = useRef(false);
 
+  const isLiked = pendingLike ?? post.isLiked;
+  const likesCount =
+    post.likes +
+    (pendingLike === null ? 0 : Number(pendingLike) - Number(post.isLiked));
+  const isBookmarked = pendingBookmark ?? post.isBookmarked;
+
   const handleLike = async () => {
     // ignore taps while a like is in flight so they can't undo each other
     if (likePendingRef.current) return;
     likePendingRef.current = true;
+    setPendingLike(!isLiked);
     try {
-      const newIsLiked = await toggleLike({ postId: post._id });
-      setIsLiked(newIsLiked);
-      setLikesCount((prev) => (newIsLiked ? prev + 1 : prev - 1));
+      await toggleLike({ postId: post._id });
     } catch (error) {
       console.error("Error toggling like:", error);
     } finally {
+      // the server data has caught up (or the tap failed), so drop the guess
+      setPendingLike(null);
       likePendingRef.current = false;
     }
   };
@@ -105,11 +113,14 @@ export default function Post({
   };
 
   const handleBookmark = async () => {
+    if (pendingBookmark !== null) return;
+    setPendingBookmark(!isBookmarked);
     try {
-      const newIsBookmarked = await toggleBookmark({ postId: post._id });
-      setIsBookmarked(newIsBookmarked);
+      await toggleBookmark({ postId: post._id });
     } catch (error) {
       console.error("Error toggling bookmark:", error);
+    } finally {
+      setPendingBookmark(null);
     }
   };
 
@@ -130,6 +141,31 @@ export default function Post({
         },
       },
     ]);
+  };
+
+  // owner-only menu: edit caption or delete
+  const handleOptions = () => {
+    const editCaption = () => setShowEditCaption(true);
+
+    if (Platform.OS === "ios") {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ["Edit caption", "Delete", "Cancel"],
+          destructiveButtonIndex: 1,
+          cancelButtonIndex: 2,
+        },
+        (index) => {
+          if (index === 0) editCaption();
+          else if (index === 1) handleDelete();
+        },
+      );
+    } else {
+      Alert.alert("Post options", undefined, [
+        { text: "Edit caption", onPress: editCaption },
+        { text: "Delete", style: "destructive", onPress: handleDelete },
+        { text: "Cancel", style: "cancel" },
+      ]);
+    }
   };
 
   return (
@@ -157,8 +193,12 @@ export default function Post({
         </Link>
 
         {post.author._id === currentUser?._id ? (
-          <TouchableOpacity onPress={handleDelete}>
-            <Ionicons name="trash-outline" size={20} color={COLORS.primary} />
+          <TouchableOpacity onPress={handleOptions}>
+            <Ionicons
+              name="ellipsis-horizontal"
+              size={20}
+              color={COLORS.white}
+            />
           </TouchableOpacity>
         ) : (
           <TouchableOpacity>
@@ -250,6 +290,13 @@ export default function Post({
         <Text style={styles.timeAgo}>{formatTimeAgo(post._creationTime)}</Text>
       </View>
 
+      <EditCaptionModal
+        postId={post._id}
+        caption={post.caption}
+        visible={showEditCaption}
+        onClose={() => setShowEditCaption(false)}
+      />
+
       <CommentsModal
         postId={post._id}
         visible={showComments}
@@ -258,3 +305,13 @@ export default function Post({
     </View>
   );
 }
+
+// skip re-rendering posts whose data didn't change when a list refreshes.
+// onDeleted is left out on purpose: callers pass a fresh arrow each render
+// that always does the same thing.
+export default memo(
+  Post,
+  (prev, next) =>
+    prev.initialShowComments === next.initialShowComments &&
+    JSON.stringify(prev.post) === JSON.stringify(next.post),
+);
