@@ -157,6 +157,10 @@ export const styles = StyleSheet.create({
     height: 100,
     textAlignVertical: "top",
   },
+  errorText: {
+    color: COLORS.error,
+    fontSize: 14,
+  },
   saveButton: {
     backgroundColor: COLORS.primary,
     padding: 16,

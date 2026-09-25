@@ -1,6 +1,7 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import {
   internalMutation,
+  mutation,
   MutationCtx,
   query,
   QueryCtx,
@@ -65,5 +66,41 @@ export const getCurrentUser = query({
       .query("users")
       .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
       .first();
+  },
+});
+
+const USERNAME_PATTERN = /^[a-z0-9._]{3,30}$/;
+
+export const updateProfile = mutation({
+  args: {
+    fullname: v.string(),
+    username: v.string(),
+    bio: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const currentUser = await getAuthenticatedUser(ctx);
+
+    const username = args.username.trim().toLowerCase();
+    if (!USERNAME_PATTERN.test(username)) {
+      throw new ConvexError(
+        "Username must be 3-30 characters: letters, numbers, periods or underscores",
+      );
+    }
+
+    // usernames must be unique
+    if (username !== currentUser.username) {
+      const existing = await ctx.db
+        .query("users")
+        .withIndex("by_username", (q) => q.eq("username", username))
+        .first();
+
+      if (existing) throw new ConvexError("That username is already taken");
+    }
+
+    await ctx.db.patch("users", currentUser._id, {
+      fullname: args.fullname,
+      username,
+      bio: args.bio,
+    });
   },
 });
