@@ -21,5 +21,12 @@ export default function InitialLayout() {
 
   if (!isLoaded) return null;
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen
+        name="stories/[userId]"
+        options={{ presentation: "fullScreenModal", animation: "fade" }}
+      />
+    </Stack>
+  );
 }

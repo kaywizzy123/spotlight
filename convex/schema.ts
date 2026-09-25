@@ -56,6 +56,19 @@ export default defineSchema({
     .index("by_receiver", ["receiverId"])
     .index("by_post", ["postId"]),
 
+  stories: defineTable({
+    userId: v.id("users"),
+    storageId: v.id("_storage"),
+    imageUrl: v.string(),
+  }).index("by_user", ["userId"]),
+
+  storyViews: defineTable({
+    storyId: v.id("stories"),
+    viewerId: v.id("users"),
+  })
+    .index("by_story", ["storyId"])
+    .index("by_story_and_viewer", ["storyId", "viewerId"]),
+
   bookmarks: defineTable({
     userId: v.id("users"),
     postId: v.id("posts"),

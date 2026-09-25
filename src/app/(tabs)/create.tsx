@@ -15,9 +15,9 @@ import {
   View,
 } from "react-native";
 import { styles } from "../../styles/create.styles";
+import { uploadImage } from "../../utils/uploadImage";
 
 import { useMutation } from "convex/react";
-import { File, UploadType } from "expo-file-system";
 import { Image } from "expo-image";
 import { api } from "../../../convex/_generated/api";
 
@@ -50,13 +50,7 @@ export default function Create() {
       setIsSharing(true);
       const uploadUrl = await generateUploadUrl();
 
-      const uploadResult = await new File(selectedImage).upload(uploadUrl, {
-        httpMethod: "POST",
-        uploadType: UploadType.BINARY_CONTENT,
-        mimeType: "image/jpeg",
-      });
-      if (uploadResult.status !== 200) throw new Error("Upload failed");
-      const { storageId } = JSON.parse(uploadResult.body);
+      const storageId = await uploadImage(selectedImage, uploadUrl);
 
       await createPost({ storageId, caption });
 

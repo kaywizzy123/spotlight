@@ -43,7 +43,31 @@ export const styles = StyleSheet.create({
     marginBottom: 4,
   },
   noStory: {
+    borderColor: "transparent",
+  },
+  seenStory: {
     borderColor: COLORS.grey,
+  },
+  storyUploading: {
+    ...StyleSheet.absoluteFill,
+    margin: 2,
+    borderRadius: 30,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  addStoryBadge: {
+    position: "absolute",
+    right: -4,
+    bottom: -4,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: COLORS.primary,
+    borderWidth: 2,
+    borderColor: COLORS.background,
+    justifyContent: "center",
+    alignItems: "center",
   },
   storyAvatar: {
     width: 60,
