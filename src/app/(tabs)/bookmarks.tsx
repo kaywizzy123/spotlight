@@ -2,7 +2,8 @@ import { Loader } from "@/components/Loader";
 import { COLORS } from "@/constants/theme";
 import { useQuery } from "convex/react";
 import { Image } from "expo-image";
-import { FlatList, Text, View } from "react-native";
+import { router } from "expo-router";
+import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import { api } from "../../../convex/_generated/api";
 import { styles } from "../../styles/feed.styles";
 
@@ -28,7 +29,15 @@ export default function Bookmarks() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 8, paddingBottom: 60 }}
         renderItem={({ item }) => (
-          <View style={{ width: "33.33%", padding: 1 }}>
+          <TouchableOpacity
+            style={{ width: "33.33%", padding: 1 }}
+            onPress={() =>
+              router.push({
+                pathname: "/saved-posts",
+                params: { postId: item._id },
+              })
+            }
+          >
             <Image
               source={item.imageUrl}
               style={{ width: "100%", aspectRatio: 1 }}
@@ -36,7 +45,7 @@ export default function Bookmarks() {
               transition={200}
               cachePolicy="memory-disk"
             />
-          </View>
+          </TouchableOpacity>
         )}
       />
     </View>

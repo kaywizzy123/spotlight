@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { Doc, Id } from "./_generated/dataModel";
+import { mutation, query, QueryCtx } from "./_generated/server";
 import { getAuthenticatedUser } from "./users";
 
 export const generateUploadUrl = mutation(async (ctx) => {
@@ -41,6 +42,40 @@ export const createPost = mutation({
   },
 });
 
+// attach author info and the current user's like/bookmark state to a post
+export async function withPostInfo(
+  ctx: QueryCtx,
+  post: Doc<"posts">,
+  currentUserId: Id<"users">,
+) {
+  const postAuthor = (await ctx.db.get("users", post.userId))!;
+
+  const like = await ctx.db
+    .query("likes")
+    .withIndex("by_user_and_post", (q) =>
+      q.eq("userId", currentUserId).eq("postId", post._id),
+    )
+    .first();
+
+  const bookmark = await ctx.db
+    .query("bookmarks")
+    .withIndex("by_user_and_post", (q) =>
+      q.eq("userId", currentUserId).eq("postId", post._id),
+    )
+    .first();
+
+  return {
+    ...post,
+    author: {
+      _id: postAuthor?._id,
+      username: postAuthor?.username,
+      image: postAuthor?.image,
+    },
+    isLiked: !!like,
+    isBookmarked: !!bookmark,
+  };
+}
+
 export const getFeedPosts = query({
   handler: async (ctx) => {
     const currentUser = await getAuthenticatedUser(ctx);
@@ -52,34 +87,7 @@ export const getFeedPosts = query({
 
     //enhance posts with userdata and interaction
     const postsWithInfo = await Promise.all(
-      posts.map(async (post) => {
-        const postAuthor = (await ctx.db.get(post.userId))!;
-
-        const like = await ctx.db
-          .query("likes")
-          .withIndex("by_user_and_post", (q) =>
-            q.eq("userId", currentUser._id).eq("postId", post._id),
-          )
-          .first();
-
-        const bookmark = await ctx.db
-          .query("bookmarks")
-          .withIndex("by_user_and_post", (q) =>
-            q.eq("userId", currentUser._id).eq("postId", post._id),
-          )
-          .first();
-
-        return {
-          ...post,
-          author: {
-            _id: postAuthor?._id,
-            username: postAuthor?.username,
-            image: postAuthor?.image,
-          },
-          isLiked: !!like,
-          isBookmarked: !!bookmark,
-        };
-      }),
+      posts.map((post) => withPostInfo(ctx, post, currentUser._id)),
     );
 
     return postsWithInfo;
@@ -196,5 +204,23 @@ export const getPostsByUser = query({
       .withIndex("by_user", (q) => q.eq("userId", user._id))
       .order("desc")
       .take(100);
+  },
+});
+
+// a user's posts with full info, for the scrollable posts view
+export const getUserPostsWithInfo = query({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    const currentUser = await getAuthenticatedUser(ctx);
+
+    const posts = await ctx.db
+      .query("posts")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .order("desc")
+      .take(100);
+
+    return await Promise.all(
+      posts.map((post) => withPostInfo(ctx, post, currentUser._id)),
+    );
   },
 });

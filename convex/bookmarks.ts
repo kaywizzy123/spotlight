@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { withPostInfo } from "./posts";
 import { getAuthenticatedUser } from "./users";
 
 export const toggleBookmark = mutation({
@@ -53,5 +54,29 @@ export const getBookmarkedPosts = query({
 
     // skip bookmarks whose post has since been deleted
     return bookmarksWithInfo.filter((post) => post !== null);
+  },
+});
+
+// bookmarked posts with full info, for the scrollable posts view
+export const getBookmarkedPostsWithInfo = query({
+  args: {},
+  handler: async (ctx) => {
+    const currentUser = await getAuthenticatedUser(ctx);
+
+    const bookmarks = await ctx.db
+      .query("bookmarks")
+      .withIndex("by_user", (q) => q.eq("userId", currentUser._id))
+      .order("desc")
+      .take(100);
+
+    const posts = await Promise.all(
+      bookmarks.map((bookmark) => ctx.db.get("posts", bookmark.postId)),
+    );
+
+    return await Promise.all(
+      posts
+        .filter((post) => post !== null)
+        .map((post) => withPostInfo(ctx, post, currentUser._id)),
+    );
   },
 });

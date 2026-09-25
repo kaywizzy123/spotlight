@@ -27,8 +27,9 @@ type PostProps = {
       image: string;
     };
   };
+  onDeleted?: () => void;
 };
-export default function Post({ post }: PostProps) {
+export default function Post({ post, onDeleted }: PostProps) {
   const [isLiked, setIsLiked] = useState(post.isLiked);
   const [likesCount, setLikesCount] = useState(post.likes);
   const [showComments, setShowComments] = useState(false);
@@ -68,6 +69,7 @@ export default function Post({ post }: PostProps) {
         onPress: async () => {
           try {
             await deletePost({ postId: post._id });
+            onDeleted?.();
           } catch (error) {
             console.error("Error deleting post:", error);
             Alert.alert("Error", "Could not delete post. Please try again.");
@@ -81,7 +83,14 @@ export default function Post({ post }: PostProps) {
     <View style={styles.post}>
       {/* POST HEADER */}
       <View style={styles.postHeader}>
-        <Link href={"/(tabs)/notifications"} asChild>
+        <Link
+          href={
+            post.author._id === currentUser?._id
+              ? "/(tabs)/profile"
+              : `/user/${post.author._id}`
+          }
+          asChild
+        >
           <TouchableOpacity style={styles.postHeaderLeft}>
             <Image
               source={post.author.image}

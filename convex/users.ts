@@ -104,3 +104,79 @@ export const updateProfile = mutation({
     });
   },
 });
+
+export const getUserProfile = query({
+  args: { id: v.id("users") },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get("users", args.id);
+    if (!user) throw new Error("User not found");
+
+    return user;
+  },
+});
+
+export const isFollowing = query({
+  args: { followingId: v.id("users") },
+  handler: async (ctx, args) => {
+    const currentUser = await getAuthenticatedUser(ctx);
+
+    const follow = await ctx.db
+      .query("follows")
+      .withIndex("by_both", (q) =>
+        q.eq("followerId", currentUser._id).eq("followingId", args.followingId),
+      )
+      .first();
+
+    return !!follow;
+  },
+});
+
+export const toggleFollow = mutation({
+  args: { followingId: v.id("users") },
+  handler: async (ctx, args) => {
+    const currentUser = await getAuthenticatedUser(ctx);
+    if (currentUser._id === args.followingId) {
+      throw new ConvexError("You can't follow yourself");
+    }
+
+    const target = await ctx.db.get("users", args.followingId);
+    if (!target) throw new ConvexError("User not found");
+
+    const existing = await ctx.db
+      .query("follows")
+      .withIndex("by_both", (q) =>
+        q.eq("followerId", currentUser._id).eq("followingId", args.followingId),
+      )
+      .first();
+
+    if (existing) {
+      // unfollow
+      await ctx.db.delete("follows", existing._id);
+      await ctx.db.patch("users", currentUser._id, {
+        following: Math.max(0, currentUser.following - 1),
+      });
+      await ctx.db.patch("users", target._id, {
+        followers: Math.max(0, target.followers - 1),
+      });
+      return false; // unfollowed
+    }
+
+    // follow
+    await ctx.db.insert("follows", {
+      followerId: currentUser._id,
+      followingId: args.followingId,
+    });
+    await ctx.db.patch("users", currentUser._id, {
+      following: currentUser.following + 1,
+    });
+    await ctx.db.patch("users", target._id, {
+      followers: target.followers + 1,
+    });
+    await ctx.db.insert("notifications", {
+      receiverId: target._id,
+      senderId: currentUser._id,
+      type: "follow",
+    });
+    return true; // followed
+  },
+});

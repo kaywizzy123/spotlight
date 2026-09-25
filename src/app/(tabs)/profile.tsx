@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
 import { ConvexError } from "convex/values";
 import { Image } from "expo-image";
+import { router } from "expo-router";
 import { useState } from "react";
 import {
   FlatList,
@@ -19,13 +20,11 @@ import {
   View,
 } from "react-native";
 import { api } from "../../../convex/_generated/api";
-import { Doc } from "../../../convex/_generated/dataModel";
 import { styles } from "../../styles/profile.styles";
 
 export default function Profile() {
   const { signOut } = useAuth();
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-  const [selectedPost, setSelectedPost] = useState<Doc<"posts"> | null>(null);
 
   const currentUser = useQuery(api.users.getCurrentUser);
   const posts = useQuery(api.posts.getPostsByUser, {});
@@ -144,7 +143,12 @@ export default function Profile() {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.gridItem}
-            onPress={() => setSelectedPost(item)}
+            onPress={() =>
+              router.push({
+                pathname: "/posts/[userId]",
+                params: { userId: currentUser._id, postId: item._id },
+              })
+            }
           >
             <Image
               source={item.imageUrl}
@@ -236,31 +240,6 @@ export default function Profile() {
             </View>
           </KeyboardAvoidingView>
         </TouchableWithoutFeedback>
-      </Modal>
-
-      {/* SELECTED POST MODAL */}
-      <Modal
-        visible={!!selectedPost}
-        animationType="fade"
-        transparent
-        onRequestClose={() => setSelectedPost(null)}
-      >
-        <View style={styles.modalBackdrop}>
-          {selectedPost && (
-            <View style={styles.postDetailContainer}>
-              <View style={styles.postDetailHeader}>
-                <TouchableOpacity onPress={() => setSelectedPost(null)}>
-                  <Ionicons name="close" size={24} color={COLORS.white} />
-                </TouchableOpacity>
-              </View>
-              <Image
-                source={selectedPost.imageUrl}
-                style={styles.postDetailImage}
-                cachePolicy="memory-disk"
-              />
-            </View>
-          )}
-        </View>
       </Modal>
     </View>
   );

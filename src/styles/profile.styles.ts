@@ -203,8 +203,6 @@ export const styles = StyleSheet.create({
   },
   followingButton: {
     backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.primary,
   },
   followButtonText: {
     color: COLORS.white,
