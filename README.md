@@ -17,7 +17,7 @@ A cross-platform social media app built with React Native, Expo and TypeScript. 
 - **Feed and posts:** share photos with captions, edit captions or delete posts later, and scroll a paginated feed of the latest posts
 - **Likes and comments:** like with a tap or a double-tap on the photo, and comment in real time
 - **Stories:** post stories that expire after 24 hours, with per-viewer "seen" tracking
-- **Follows and profiles:** follow other users and view their profiles and posts
+- **Follows and profiles:** follow other users, view their profiles and posts, and browse anyone's followers and following lists
 - **Bookmarks:** save posts to revisit later
 - **Notifications:** get notified about likes, comments and follows, with an unread indicator
 - **Google sign-in** through Clerk
@@ -94,6 +94,7 @@ src/
   app/
     (auth)/      Login screen
     (tabs)/      Feed, bookmarks, create, notifications, profile
+    follows/     Followers and following lists
     post/        Single post view
     stories/     Story viewer
     user/        Other users' profiles

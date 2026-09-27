@@ -1,3 +1,4 @@
+import { paginationOptsValidator } from "convex/server";
 import { ConvexError, v } from "convex/values";
 import {
   internalMutation,
@@ -128,6 +129,62 @@ export const isFollowing = query({
       .first();
 
     return !!follow;
+  },
+});
+
+// a user's followers or the people they follow, newest first, a page at a time
+export const getFollowList = query({
+  args: {
+    userId: v.id("users"),
+    type: v.union(v.literal("followers"), v.literal("following")),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    const currentUser = await getAuthenticatedUser(ctx);
+
+    const result =
+      args.type === "followers"
+        ? await ctx.db
+            .query("follows")
+            .withIndex("by_following", (q) => q.eq("followingId", args.userId))
+            .order("desc")
+            .paginate(args.paginationOpts)
+        : await ctx.db
+            .query("follows")
+            .withIndex("by_follower", (q) => q.eq("followerId", args.userId))
+            .order("desc")
+            .paginate(args.paginationOpts);
+
+    const users = await Promise.all(
+      result.page.map(async (follow) => {
+        const userId =
+          args.type === "followers" ? follow.followerId : follow.followingId;
+        const user = await ctx.db.get("users", userId);
+        if (!user) return null;
+
+        // whether the viewer follows this person, for the row's button
+        const viewerFollow = await ctx.db
+          .query("follows")
+          .withIndex("by_both", (q) =>
+            q.eq("followerId", currentUser._id).eq("followingId", user._id),
+          )
+          .first();
+
+        return {
+          _id: user._id,
+          username: user.username,
+          fullname: user.fullname,
+          image: user.image,
+          isFollowing: !!viewerFollow,
+          isCurrentUser: user._id === currentUser._id,
+        };
+      }),
+    );
+
+    return {
+      ...result,
+      page: users.filter((user) => user !== null),
+    };
   },
 });
 

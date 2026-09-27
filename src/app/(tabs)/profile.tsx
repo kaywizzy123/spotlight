@@ -112,14 +112,30 @@ export default function Profile() {
                   <Text style={styles.statNumber}>{currentUser.posts}</Text>
                   <Text style={styles.statLabel}>Posts</Text>
                 </View>
-                <View style={styles.statItem}>
+                <TouchableOpacity
+                  style={styles.statItem}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/follows/[userId]",
+                      params: { userId: currentUser._id, tab: "followers" },
+                    })
+                  }
+                >
                   <Text style={styles.statNumber}>{currentUser.followers}</Text>
                   <Text style={styles.statLabel}>Followers</Text>
-                </View>
-                <View style={styles.statItem}>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.statItem}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/follows/[userId]",
+                      params: { userId: currentUser._id, tab: "following" },
+                    })
+                  }
+                >
                   <Text style={styles.statNumber}>{currentUser.following}</Text>
                   <Text style={styles.statLabel}>Following</Text>
-                </View>
+                </TouchableOpacity>
               </View>
             </View>
 
