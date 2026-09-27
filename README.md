@@ -1,56 +1,110 @@
-# Welcome to your Expo app 👋
+# Spotlight
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A cross-platform social media app built with React Native, Expo and TypeScript. Share photos, follow people, react and comment in real time, and post stories that disappear after 24 hours.
 
-## Get started
+## Screenshots
 
-1. Install dependencies
+| Feed | Notifications | Profile |
+| :---: | :---: | :---: |
+| <img src="assets/screenshots/feed.png" width="250" alt="Feed with stories and posts" /> | <img src="assets/screenshots/notifications.png" width="250" alt="Notifications for likes, comments and follows" /> | <img src="assets/screenshots/profile.png" width="250" alt="User profile with posts grid" /> |
 
-   ```bash
-   npm install
-   ```
+| Bookmarks | Dark mode |
+| :---: | :---: |
+| <img src="assets/screenshots/bookmarks.png" width="250" alt="Saved posts" /> | <img src="assets/screenshots/profile-dark.png" width="250" alt="Profile in dark mode" /> |
 
-2. Start the app
+## Features
 
-   ```bash
-   npx expo start
-   ```
+- **Feed and posts:** share photos with captions, edit captions or delete posts later, and scroll a paginated feed of the latest posts
+- **Likes and comments:** like with a tap or a double-tap on the photo, and comment in real time
+- **Stories:** post stories that expire after 24 hours, with per-viewer "seen" tracking
+- **Follows and profiles:** follow other users and view their profiles and posts
+- **Bookmarks:** save posts to revisit later
+- **Notifications:** get notified about likes, comments and follows, with an unread indicator
+- **Google sign-in** through Clerk
+- **Light and dark themes** that follow your device settings
 
-In the output, you'll find options to open the app in a
+## How it works
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+**Real-time backend:** the app runs on [Convex](https://convex.dev), a reactive database. Queries update live, so new likes, comments and notifications appear without refreshing. The schema uses indexed tables for users, posts, likes, comments, follows, stories and bookmarks, and keeps like and comment counts on each post for fast feed reads.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+**Authentication and user sync:** Clerk handles sign-in. When a new user signs up, Clerk calls a webhook endpoint (`/clerk-webhook`) on the Convex backend. The endpoint verifies the request signature with Svix before creating the user record, so only genuine Clerk events are accepted.
 
-## Get a fresh project
+**Image uploads:** photos are resized and compressed on the device before upload, which keeps uploads fast and storage small.
 
-When you're ready, run:
+## Tech stack
+
+- React Native with Expo and Expo Router (file-based navigation)
+- TypeScript
+- Convex (database, real-time queries, file storage, HTTP endpoints)
+- Clerk (authentication)
+- Svix (webhook signature verification)
+
+## Getting started
+
+### Prerequisites
+
+- Node.js
+- A [Convex](https://convex.dev) account
+- A [Clerk](https://clerk.com) application with Google sign-in enabled
+
+### Setup
 
 ```bash
-npm run reset-project
+git clone https://github.com/kaywizzy123/spotlight.git
+cd spotlight
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Create a `.env.local` file in the project root:
 
-### Other setup steps
+```
+EXPO_PUBLIC_CONVEX_URL=your-convex-deployment-url
+EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=your-clerk-publishable-key
+```
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+In your Convex dashboard, set these environment variables:
 
-## Learn more
+```
+CLERK_JWT_ISSUER_DOMAIN=your-clerk-issuer-domain
+CLERK_WEBHOOK_SECRET=your-clerk-webhook-signing-secret
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+In the Clerk dashboard, add a webhook pointing to `https://<your-convex-deployment>.convex.site/clerk-webhook` and subscribe it to the `user.created` event.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Run
 
-## Join the community
+Start the Convex backend in one terminal:
 
-Join our community of developers creating universal apps.
+```bash
+npx convex dev
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Start the app in another:
+
+```bash
+npx expo start
+```
+
+Then open it in Expo Go, an iOS simulator or an Android emulator.
+
+## Project structure
+
+```
+src/
+  app/
+    (auth)/      Login screen
+    (tabs)/      Feed, bookmarks, create, notifications, profile
+    post/        Single post view
+    stories/     Story viewer
+    user/        Other users' profiles
+  components/    Reusable UI components
+  utils/         Image upload and helpers
+convex/
+  schema.ts      Database schema
+  http.ts        Clerk webhook endpoint
+  posts.ts, comments.ts, stories.ts, ...   Backend queries and mutations
+```
+
+## Author
+
+Built by [Oluwakayode Ogunremi](https://github.com/kaywizzy123)
