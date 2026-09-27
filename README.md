@@ -8,9 +8,9 @@ A cross-platform social media app built with React Native, Expo and TypeScript. 
 | :---: | :---: | :---: |
 | <img src="assets/screenshots/feed.png" width="250" alt="Feed with stories and posts" /> | <img src="assets/screenshots/notifications.png" width="250" alt="Notifications for likes, comments and follows" /> | <img src="assets/screenshots/profile.png" width="250" alt="User profile with posts grid" /> |
 
-| Bookmarks | Dark mode |
-| :---: | :---: |
-| <img src="assets/screenshots/bookmarks.png" width="250" alt="Saved posts" /> | <img src="assets/screenshots/profile-dark.png" width="250" alt="Profile in dark mode" /> |
+| Stories | Bookmarks | Dark mode |
+| :---: | :---: | :---: |
+| <img src="assets/screenshots/story.png" width="250" alt="Story viewer" /> | <img src="assets/screenshots/bookmarks.png" width="250" alt="Saved posts" /> | <img src="assets/screenshots/profile-dark.png" width="250" alt="Profile in dark mode" /> |
 
 ## Features
 
