@@ -56,6 +56,7 @@ export default defineSchema({
     commentId: v.optional(v.id("comments")),
   })
     .index("by_receiver", ["receiverId"])
+    .index("by_receiver_and_sender_and_type", ["receiverId", "senderId", "type"])
     .index("by_post", ["postId"]),
 
   stories: defineTable({
